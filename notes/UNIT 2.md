@@ -2806,3 +2806,62 @@ The agent follows this process:
 6. **Source Integration:** Information can be combined from multiple sources like web search and local documentation
 7. **Result Validation:** Retrieved content can be analyzed for relevance and accuracy before being included in responses
 
+
+
+# LANGGRAPH
+
+
+  
+
+### 1. **State** defines the structure of the custom dictionary that stores and tracks data across all steps of your workflow.
+    
+      
+    
+
+Python
+
+```python
+from typing_extensions import TypedDict
+
+class State(TypedDict):
+    graph_state: str
+```
+
+### 2. **Nodes** are Python functions that take the current state as input, execute operations (such as LLM or tool calls), and return state updates.
+    
+      
+    
+
+Python
+
+```python
+def node_1(state: State):
+    return {"graph_state": state['graph_state'] + " I am"}
+```
+
+### 3. **Edges** establish the control flow by defining direct paths or conditional routes between nodes based on the current state.
+    
+      
+    
+
+Python
+
+```python
+def decide_mood(state: State) -> str:
+    return "node_2" if random.random() < 0.5 else "node_3"
+```
+
+### 4. **StateGraph** combines state, nodes, and edges into a single workflow container that is compiled into an executable application.
+    
+
+Python
+
+```python
+from langgraph.graph import StateGraph, START, END
+
+builder = StateGraph(State)
+builder.add_node("node_1", node_1)
+builder.add_edge(START, "node_1")
+builder.add_conditional_edges("node_1", decide_mood)
+graph = builder.compile()
+```
